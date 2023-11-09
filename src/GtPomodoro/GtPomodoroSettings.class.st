@@ -8,7 +8,8 @@ Class {
 		'duration',
 		'goals',
 		'element',
-		'recalculationsPerSecond'
+		'recalculationsPerSecond',
+		'pomodoros'
 	],
 	#classVars : [
 		'ShowRing',
@@ -106,14 +107,21 @@ GtPomodoroSettings >> countdownAction [
 	iconTask := BlRepeatedTaskAction new
 			delay: (1 / self recalculationsPerSecond) second;
 			action: [ timeLeft := timeLeft - (1 / self recalculationsPerSecond).
-				self class worldPomodoroElement
-					icon: (self
-							countdownTimer: (totalTime - timeLeft) / totalTime
-							showRing: self class showRing).
+				timeLeft < 60
+					ifTrue: [ timeTask isRunning ifTrue: [ timeTask stop ].
+						self class worldPomodoroElement
+							label: 'You better start wrapping it up!';
+							icon: (BlTextElement new
+									text: (timeLeft asInteger asRopedText
+											foreground: BrGlamorousColors linkWithErrorColor;
+											fontSize: 24)) ]
+					ifFalse: [ self class worldPomodoroElement
+							icon: (self
+									countdownTimer: (totalTime - timeLeft) / totalTime
+									showRing: self class showRing) ].
 				timeLeft = 0
 					ifTrue: [ self class toolbar
-							enqueueTask: [ timeTask stop.
-								iconTask stop.
+							enqueueTask: [ iconTask stop.
 								self class worldPomodoroElement
 									icon: BrGlamorousVectorIcons timer;
 									label: 'Start a Pomodoro Timer';
@@ -188,7 +196,7 @@ GtPomodoroSettings >> magritteAcceptAction [
 	<magritteActionDescription>
 	^ super magritteAcceptAction
 		onSuccessCallback: (GtMagritteCallback new
-				action: [ :aModel "self inform: 'accepted'." :aButton :aMemento :aDescription | 
+				action: [ :aModel :aButton :aMemento :aDescription | 
 					aButton fireEvent: BrDropdownHideWish new.
 					self class toolbar
 						enqueueTask: (BlDelayedTaskAction new
@@ -196,7 +204,16 @@ GtPomodoroSettings >> magritteAcceptAction [
 								action: [ self class worldPomodoroElement
 										disable;
 										icon: (self countdownTimer: 0 showRing: self class showRing).
-									self countdownAction ]) ]);
+									self countdownAction ]).
+					self pomodoros
+						add: [ | start aDuration |
+							start := DateAndTime now.
+							aDuration := aModel duration asInteger.
+							GtPomodoro new
+								start: start;
+								duration: aDuration;
+								end: start + aDuration minutes;
+								goals: aModel goals ] value ]);
 		beAlwaysEnabled
 ]
 
@@ -247,6 +264,13 @@ GtPomodoroSettings >> pomodoroOtherDescription [
 		accessor: #duration;
 		editorAptitude: [ BrGlamorousEditableLabelAptitude new glamorousFormEditorCodeFontAndSize ];
 		display: [ :aString | aString  ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> pomodoros [
+	pomodoros
+		ifNil: [ pomodoros := SortedCollection
+					sortUsing: [ :aPomodoro | aPomodoro start ] ascending ]
 ]
 
 { #category : #accessing }
