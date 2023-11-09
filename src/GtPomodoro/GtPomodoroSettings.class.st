@@ -270,17 +270,7 @@ GtPomodoroSettings >> pomodoroOtherDescription [
 
 { #category : #accessing }
 GtPomodoroSettings >> pomodoros [
-	^ pomodoros
-		ifNil: [ pomodoros := (SortedCollection
-					sortUsing: [ :aPomodoro | aPomodoro start ] ascending) asValueHolder.
-			pomodoros
-				whenAddedDo: [ :newValue | 
-					| folder |
-					folder := ('.' asFileReference / #pomodoro) ensureCreateDirectory.
-					folder / self counter asString , 'json'
-						writeStreamDo: [ :aStream | STONJSON put: newValue asDictionary onStreamPretty: aStream ].
-					self counter: self counter + 1 ].
-			pomodoros ]
+	^ pomodoros ifNil: [ pomodoros := GtPomodoros new ]
 ]
 
 { #category : #accessing }
