@@ -22,6 +22,66 @@ GtPomodoro >> asDictionary [
 ]
 
 { #category : #accessing }
+GtPomodoro >> displayPomodoro [
+	^ (BrVerticalPane new
+		exact: 600 @ 300;
+		aptitude: BrShadowAptitude;
+		margin: (BlInsets all: 6);
+		background: Color white;
+		addChildren: {BrHorizontalPane new alignCenter
+					background: Color white;
+					aptitude: BrGlamorousEditorAptitude + BrShadowAptitude;
+					constraintsDo: [ :c | 
+						c horizontal matchParent.
+						c vertical matchParent ];
+					margin: (BlInsets all: 20);
+					addChildren: {BrLabel new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousLabelAptitude;
+								text: 'Start: '.
+							BrButton new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousButtonWithLabelAptitude;
+								label: self start printToSeconds.
+							BrLabel new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousLabelAptitude;
+								text: 'Duration: '.
+							BrButton new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousButtonWithLabelAptitude;
+								label: self duration asString.
+							BrLabel new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousLabelAptitude;
+								text: 'End: '.
+							BrButton new
+								margin: (BlInsets all: 10);
+								aptitude: BrGlamorousButtonWithLabelAptitude;
+								label: self end printToSeconds}.
+				BrLabel new
+					margin: (BlInsets all: 10);
+					aptitude: BrGlamorousLabelAptitude;
+					text: 'Goals:'.
+				BrEditor new
+					background: Color white;
+					aptitude: BrGlamorousEditorAptitude + BrShadowAptitude;
+					margin: (BlInsets all: 20);
+					beReadOnlyWithSelection;
+					text: self goals.
+				BrLabel new
+					margin: (BlInsets all: 10);
+					aptitude: BrGlamorousLabelAptitude;
+					text: 'Reflections:'.
+				BrEditableLabel new
+					margin: (BlInsets all: 10);
+					aptitude: BrGlamorousEditableLabelAptitude;
+					text: (self reflection ifNil: [ '' ]);
+					when: BrEditorAcceptWish
+						do: [ :aWish | self reflection: aWish text asString ]}) asStencil
+]
+
+{ #category : #accessing }
 GtPomodoro >> duration [
 	^ duration
 ]
@@ -49,6 +109,15 @@ GtPomodoro >> goals [
 { #category : #accessing }
 GtPomodoro >> goals: anObject [
 	goals := anObject
+]
+
+{ #category : #accessing }
+GtPomodoro >> gtPomodoroFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Summary';
+		priority: 1;
+		stencil: self displayPomodoro
 ]
 
 { #category : #accessing }

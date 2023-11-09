@@ -10,6 +10,17 @@ Class {
 	#category : #GtPomodoro
 }
 
+{ #category : #views }
+GtPomodoros class >> gtPomodorosFor: aView [
+	<gtView>
+	<gtClassView>
+	^ aView forward
+		title: 'Pomodoros';
+		priority: -1;
+		object: GtPomodoroSettings default pomodoros;
+		view: #gtPomodorosFor:
+]
+
 { #category : #accessing }
 GtPomodoros >> add: anItem [
 	self valueHolder add: anItem
@@ -28,6 +39,23 @@ GtPomodoros >> counter [
 { #category : #accessing }
 GtPomodoros >> counter: anInteger [
 	counter := anInteger
+]
+
+{ #category : #views }
+GtPomodoros >> gtPomodorosFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Pomodoros';
+		priority: 1;
+		stencil: [ (BrVerticalPane new
+				hMatchParent;
+				vFitContent;
+				background: Color white;
+				addAptitude: BrShadowAptitude new;
+				alignCenter;
+				addChildren: (self items
+						collect: [ :each | (each gtPomodoroFor: GtPhlowView empty) asElement ]))
+				asScrollableElement ]
 ]
 
 { #category : #accessing }
