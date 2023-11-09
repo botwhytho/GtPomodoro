@@ -7,9 +7,9 @@ Class {
 		'durations',
 		'duration',
 		'goals',
-		'element',
 		'recalculationsPerSecond',
-		'pomodoros'
+		'pomodoros',
+		'counter'
 	],
 	#classVars : [
 		'ShowRing',
@@ -79,21 +79,19 @@ GtPomodoroSettings class >> worldPomodoroElement [
 
 { #category : #accessing }
 GtPomodoroSettings >> asElement [
-	"element :=" ^ BrButton new
-			id: self class blocElementId;
-			size: 48 @ 48;
-			label: 'Start a Pomodoro Timer';
-			aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude
-					+ (BrGlamorousWithDropdownAptitude
-							handle: [ BrButton new
-									id: self class blocElementId;
-									size: 48 @ 48;
-									aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
-									icon: BrGlamorousVectorIcons timer ]
-							content: [ self asGtMagritteViewModel asElement
-									margin: (BlInsets all: 20) ]);
-			icon: BrGlamorousVectorIcons timer.
-	"^ element"
+	^ BrButton new
+		id: self class blocElementId;
+		size: 48 @ 48;
+		label: 'Start a Pomodoro Timer';
+		aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude
+				+ (BrGlamorousWithDropdownAptitude
+						handle: [ BrButton new
+								id: self class blocElementId;
+								size: 48 @ 48;
+								aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
+								icon: BrGlamorousVectorIcons timer ]
+						content: [ self asGtMagritteViewModel asElement margin: (BlInsets all: 20) ]);
+		icon: BrGlamorousVectorIcons timer
 ]
 
 { #category : #accessing }
@@ -151,6 +149,29 @@ GtPomodoroSettings >> countdownTimer: percentComplete showRing: showRing [
 ]
 
 { #category : #accessing }
+GtPomodoroSettings >> counter [
+	^ counter ifNil: [ counter := 1 ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> counter: anObject [
+	counter := anObject
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> createPomodoro: aMemento [
+	| start aDuration |
+	start := DateAndTime now.
+	aDuration := aMemento duration asInteger.
+	^ GtPomodoro new
+		start: start;
+		duration: aDuration;
+		end: start + aDuration minutes;
+		goals: aMemento goals;
+		yourself
+]
+
+{ #category : #accessing }
 GtPomodoroSettings >> duration [
 	^ duration ifNil: [ duration := '25' ]
 ]
@@ -168,17 +189,6 @@ GtPomodoroSettings >> durations [
 { #category : #accessing }
 GtPomodoroSettings >> durations: aCollection [
 	durations := aCollection
-]
-
-{ #category : #accessing }
-GtPomodoroSettings >> element [
-	^ element
-		ifNil: [ element := (self class toolbar query // self class blocElementId) anyOne ]
-]
-
-{ #category : #accessing }
-GtPomodoroSettings >> element: anObject [
-	^ element := anObject
 ]
 
 { #category : #accessing }
@@ -205,15 +215,7 @@ GtPomodoroSettings >> magritteAcceptAction [
 										disable;
 										icon: (self countdownTimer: 0 showRing: self class showRing).
 									self countdownAction ]).
-					self pomodoros
-						add: [ | start aDuration |
-							start := DateAndTime now.
-							aDuration := aModel duration asInteger.
-							GtPomodoro new
-								start: start;
-								duration: aDuration;
-								end: start + aDuration minutes;
-								goals: aModel goals ] value ]);
+					self pomodoros add: (self createPomodoro: aMemento) ]);
 		beAlwaysEnabled
 ]
 
@@ -268,9 +270,17 @@ GtPomodoroSettings >> pomodoroOtherDescription [
 
 { #category : #accessing }
 GtPomodoroSettings >> pomodoros [
-	pomodoros
-		ifNil: [ pomodoros := SortedCollection
-					sortUsing: [ :aPomodoro | aPomodoro start ] ascending ]
+	^ pomodoros
+		ifNil: [ pomodoros := (SortedCollection
+					sortUsing: [ :aPomodoro | aPomodoro start ] ascending) asValueHolder.
+			pomodoros
+				whenAddedDo: [ :newValue | 
+					| folder |
+					folder := ('.' asFileReference / #pomodoro) ensureCreateDirectory.
+					folder / self counter asString , 'json'
+						writeStreamDo: [ :aStream | STONJSON put: newValue asDictionary onStreamPretty: aStream ].
+					self counter: self counter + 1 ].
+			pomodoros ]
 ]
 
 { #category : #accessing }

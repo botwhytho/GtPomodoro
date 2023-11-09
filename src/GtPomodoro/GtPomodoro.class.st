@@ -12,6 +12,16 @@ Class {
 }
 
 { #category : #accessing }
+GtPomodoro >> asDictionary [
+	^ (self class slots
+		collect: [ :each | 
+			each name
+				-> ((self perform: each name)
+						in: [ :aValue | (aValue isKindOf: Number) ifTrue: [ aValue ] ifFalse: [ aValue asString ] ]) ])
+		asDictionary
+]
+
+{ #category : #accessing }
 GtPomodoro >> duration [
 	^ duration
 ]
