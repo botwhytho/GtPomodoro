@@ -9,6 +9,10 @@ Class {
 		'goals',
 		'element'
 	],
+	#classVars : [
+		'ShowRing',
+		'Toolbar'
+	],
 	#classInstVars : [
 		'uniqueInstance'
 	],
@@ -47,16 +51,28 @@ GtPomodoroSettings class >> initialize [
 	self enable
 ]
 
+{ #category : #accessing }
+GtPomodoroSettings class >> showRing [
+	^ ShowRing ifNil: [ ShowRing := false ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings class >> toggleRing [
+	ShowRing := ShowRing not
+]
+
 { #category : #initialization }
 GtPomodoroSettings class >> toolbar [
-	^ BlSpace
-		spaceWithId: GtWorld defaultId
-		do: [ :aSpace | (aSpace topMostParent query // GtWorldSpotterSearchElementId) anyOne parent ]
+	^ Toolbar
+		ifNil: [ Toolbar := BlSpace
+					spaceWithId: GtWorld defaultId
+					do: [ :aSpace | (aSpace topMostParent query // GtWorldSpotterSearchElementId) anyOne parent ] ]
 ]
 
 { #category : #accessing }
 GtPomodoroSettings class >> worldPomodoroElement [
 	^ (self toolbar query // self blocElementId) anyOne
+	"^ self default element"
 ]
 
 { #category : #accessing }
@@ -90,7 +106,7 @@ GtPomodoroSettings >> countdownAction [
 			delay: 0.25 second;
 			action: [ timeLeft := timeLeft - 0.25.
 				self class worldPomodoroElement
-					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: false).
+					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: self class showRing).
 				timeLeft = 0
 					ifTrue: [ self class toolbar
 							enqueueTask: [ timeTask stop.
@@ -146,6 +162,7 @@ GtPomodoroSettings >> durations: aCollection [
 { #category : #accessing }
 GtPomodoroSettings >> element [
 	^ element
+		ifNil: [ element := (self class toolbar query // self class blocElementId) anyOne ]
 ]
 
 { #category : #accessing }
@@ -175,7 +192,7 @@ GtPomodoroSettings >> magritteAcceptAction [
 								delay: 0 milliseconds;
 								action: [ self class worldPomodoroElement
 										disable;
-										icon: (self countdownTimer: 0 showRing: false).
+										icon: (self countdownTimer: 0 showRing: self class showRing).
 									self countdownAction ]) ]);
 		beAlwaysEnabled
 ]
