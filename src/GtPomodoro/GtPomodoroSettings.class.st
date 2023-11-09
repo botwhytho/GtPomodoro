@@ -61,7 +61,7 @@ GtPomodoroSettings class >> worldPomodoroElement [
 
 { #category : #accessing }
 GtPomodoroSettings >> asElement [
-	element := BrButton new
+	"element :=" ^ BrButton new
 			id: self class blocElementId;
 			size: 48 @ 48;
 			label: 'Start a Pomodoro Timer';
@@ -75,14 +75,14 @@ GtPomodoroSettings >> asElement [
 							content: [ self asGtMagritteViewModel asElement
 									margin: (BlInsets all: 20) ]);
 			icon: BrGlamorousVectorIcons timer.
-	^ element
+	"^ element"
 ]
 
 { #category : #accessing }
 GtPomodoroSettings >> countdownAction [
 	| iconTask timeTask timeLeft totalTime |
-	totalTime := self duration asInteger * 60.
-	timeLeft := self duration asInteger * 60.
+	totalTime := self duration asInteger * 60.0.
+	timeLeft := self duration asInteger * 60.0.
 	timeTask := BlRepeatedTaskAction new
 			delay: 1 second;
 			action: [ self class worldPomodoroElement label: timeLeft asInteger seconds asString ].
@@ -92,14 +92,16 @@ GtPomodoroSettings >> countdownAction [
 				self class worldPomodoroElement
 					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: false).
 				timeLeft = 0
-					ifTrue: [ self inform: 'Stopped'.
-						timeTask stop.
-						iconTask stop.
-						self class worldPomodoroElement
-							icon: BrGlamorousVectorIcons timer;
-							label: 'Start a Pomodoro Timer' ] ].
-	self class worldPomodoroElement enqueueTask: iconTask.
-	self class worldPomodoroElement enqueueTask: timeTask
+					ifTrue: [ self class toolbar
+							enqueueTask: [ self inform: 'Stopped'.
+								timeTask stop.
+								iconTask stop.
+								self class worldPomodoroElement
+									icon: BrGlamorousVectorIcons timer;
+									label: 'Start a Pomodoro Timer';
+									enable ] asBlTask ] ].
+	self class toolbar enqueueTask: iconTask.
+	self class toolbar enqueueTask: timeTask
 ]
 
 { #category : #accessing }
@@ -169,11 +171,13 @@ GtPomodoroSettings >> magritteAcceptAction [
 		onSuccessCallback: (GtMagritteCallback new
 				action: [ :aModel "self inform: 'accepted'." :aButton :aMemento :aDescription | 
 					aButton fireEvent: BrDropdownHideWish new.
-					aButton
-						enqueueTask: [ self class worldPomodoroElement
-								disable;
-								icon: (self countdownTimer: 0 showRing: false).
-							self countdownAction ] asBlTask ]);
+					self class toolbar
+						enqueueTask: (BlDelayedTaskAction new
+								delay: 0 milliseconds;
+								action: [ self class worldPomodoroElement
+										disable;
+										icon: (self countdownTimer: 0 showRing: false).
+									self countdownAction ]) ]);
 		beAlwaysEnabled
 ]
 
