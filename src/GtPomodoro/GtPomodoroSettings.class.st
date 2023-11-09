@@ -7,7 +7,8 @@ Class {
 		'durations',
 		'duration',
 		'goals',
-		'element'
+		'element',
+		'recalculationsPerSecond'
 	],
 	#classVars : [
 		'ShowRing',
@@ -26,13 +27,13 @@ GtPomodoroSettings class >> asElement [
 
 { #category : #accessing }
 GtPomodoroSettings class >> blocElementId [
-	^ 'gt-world--pomodoro'
+	^ #'gt-world--pomodoro'
 ]
 
 { #category : #accessing }
 GtPomodoroSettings class >> defaultDurations [
 
-	^ #('60' '30' '25' '20' '15' '10' '5' '1' "'Other'")
+	^ #('60' '30' '25' '20' '15' '10' '5' '4' '2' '1')
 ]
 
 { #category : #accessing }
@@ -71,8 +72,8 @@ GtPomodoroSettings class >> toolbar [
 
 { #category : #accessing }
 GtPomodoroSettings class >> worldPomodoroElement [
-	^ (self toolbar query // self blocElementId) anyOne
-	"^ self default element"
+	^ self toolbar children
+		detect: [ :each | each id asSymbol = self blocElementId ]
 ]
 
 { #category : #accessing }
@@ -103,10 +104,12 @@ GtPomodoroSettings >> countdownAction [
 			delay: 1 second;
 			action: [ self class worldPomodoroElement label: timeLeft asInteger seconds asString ].
 	iconTask := BlRepeatedTaskAction new
-			delay: 0.25 second;
-			action: [ timeLeft := timeLeft - 0.25.
+			delay: (1 / self recalculationsPerSecond) second;
+			action: [ timeLeft := timeLeft - (1 / self recalculationsPerSecond).
 				self class worldPomodoroElement
-					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: self class showRing).
+					icon: (self
+							countdownTimer: (totalTime - timeLeft) / totalTime
+							showRing: self class showRing).
 				timeLeft = 0
 					ifTrue: [ self class toolbar
 							enqueueTask: [ timeTask stop.
@@ -244,4 +247,16 @@ GtPomodoroSettings >> pomodoroOtherDescription [
 		accessor: #duration;
 		editorAptitude: [ BrGlamorousEditableLabelAptitude new glamorousFormEditorCodeFontAndSize ];
 		display: [ :aString | aString  ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> recalculationsPerSecond [
+	^ recalculationsPerSecond ifNil: [ recalculationsPerSecond := 1 ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> recalculationsPerSecond: anInteger [
+	"Set how many times per second the percentage completion is redrawn"
+
+	recalculationsPerSecond := anInteger
 ]
