@@ -9,8 +9,8 @@ Class {
 		'goals',
 		'element'
 	],
-	#classVars : [
-		'Toolbar'
+	#classInstVars : [
+		'uniqueInstance'
 	],
 	#category : #GtPomodoro
 }
@@ -31,18 +31,27 @@ GtPomodoroSettings class >> defaultDurations [
 	^ #('60' '30' '25' '20' '15' '10' '5' '1' "'Other'")
 ]
 
+{ #category : #accessing }
+GtPomodoroSettings class >> disable [
+	self toolbar removeItem: self worldPomodoroElement
+]
+
 { #category : #initialization }
-GtPomodoroSettings class >> initialize [
-	super initialize.
+GtPomodoroSettings class >> enable [
 	self toolbar addItem: self asElement
 ]
 
 { #category : #initialization }
+GtPomodoroSettings class >> initialize [
+	super initialize.
+	self enable
+]
+
+{ #category : #initialization }
 GtPomodoroSettings class >> toolbar [
-	^ Toolbar
-		ifNil: [ Toolbar := BlSpace
-					spaceWithId: GtWorld defaultId
-					do: [ :aSpace | (aSpace topMostParent query // GtWorldSpotterSearchElementId) anyOne parent ] ]
+	^ BlSpace
+		spaceWithId: GtWorld defaultId
+		do: [ :aSpace | (aSpace topMostParent query // GtWorldSpotterSearchElementId) anyOne parent ]
 ]
 
 { #category : #accessing }
