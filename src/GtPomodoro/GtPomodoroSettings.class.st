@@ -93,8 +93,7 @@ GtPomodoroSettings >> countdownAction [
 					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: false).
 				timeLeft = 0
 					ifTrue: [ self class toolbar
-							enqueueTask: [ self inform: 'Stopped'.
-								timeTask stop.
+							enqueueTask: [ timeTask stop.
 								iconTask stop.
 								self class worldPomodoroElement
 									icon: BrGlamorousVectorIcons timer;
@@ -186,9 +185,7 @@ GtPomodoroSettings >> magritteCancelAction [
 	<magritteActionDescription>
 	^ super magritteCancelAction
 		onSuccessCallback: (GtMagritteCallback new
-				action: [ :aModel :aButton :aMemento :aDescription | 
-					self inform: 'Cancelled'.
-					aButton fireEvent: BrDropdownHideWish new ]);
+				action: [ :aModel :aButton :aMemento :aDescription | aButton fireEvent: BrDropdownHideWish new ]);
 		beAlwaysEnabled
 ]
 
