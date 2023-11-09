@@ -17,22 +17,7 @@ Class {
 
 { #category : #accessing }
 GtPomodoroSettings class >> asElement [
-	| element |
-	element := BrButton new
-			id: #gtPomodoro;
-			size: 48 @ 48;
-			aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude
-					+ (BrGlamorousWithDropdownAptitude
-							handle: [ BrButton new
-									size: 48 @ 48;
-									aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
-									icon: BrGlamorousVectorIcons timer ]
-							content: [ self asGtMagritteViewModel asElement
-									margin: (BlInsets all: 20) ]);
-			icon: BrGlamorousVectorIcons timer.
-
-	self default element: element.
-	^ element
+	^ self default asElement
 ]
 
 { #category : #accessing }
@@ -53,6 +38,48 @@ GtPomodoroSettings class >> toolbar [
 		ifNil: [ Toolbar := BlSpace
 					spaceWithId: GtWorld defaultId
 					do: [ :aSpace | (aSpace topMostParent query // GtWorldSpotterSearchElementId) anyOne parent ] ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> asElement [
+	element := BrButton new.
+	element
+		id: #gtPomodoro;
+		size: 48 @ 48;
+		label: 'Start a Pomodoro Timer';
+		aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude
+				+ (BrGlamorousWithDropdownAptitude
+						handle: [ BrButton new
+								size: 48 @ 48;
+								aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
+								icon: BrGlamorousVectorIcons timer ]
+						content: [ self asGtMagritteViewModel asElement margin: (BlInsets all: 20) ]);
+		icon: BrGlamorousVectorIcons timer.
+	^ element
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> countdownAction [
+	| iconTask timeTask timeLeft totalTime |
+	totalTime := self duration * 60.
+	timeLeft := self duration * 60.
+	timeTask := BlRepeatedTaskAction new
+			delay: 1 second;
+			action: [ self element label: timeLeft asInteger seconds asString ].
+	iconTask := BlRepeatedTaskAction new
+			delay: 0.25 second;
+			action: [ timeLeft := timeLeft - 0.25.
+				self element
+					icon: (self countdownTimer: (totalTime - timeLeft) / totalTime showRing: false).
+				timeLeft = 0
+					ifTrue: [ self inform: 'Stopped'.
+						timeTask stop.
+						iconTask stop.
+						self element
+							icon: BrGlamorousVectorIcons timer;
+							label: 'Start a Pomodoro Timer' ] ].
+	self element enqueueTask: iconTask.
+	self element enqueueTask: timeTask
 ]
 
 { #category : #accessing }
@@ -121,9 +148,12 @@ GtPomodoroSettings >> magritteAcceptAction [
 	<magritteActionDescription>
 	^ super magritteAcceptAction
 		onSuccessCallback: (GtMagritteCallback new
-				action: [ :aModel :aButton :aMemento :aDescription | 
-					self inform: 'accepted'.
-					aButton fireEvent: BrDropdownHideWish new ]);
+				action: [ :aModel "self inform: 'accepted'." :aButton :aMemento :aDescription | 
+					aButton fireEvent: BrDropdownHideWish new.
+					self element
+						disable;
+						icon: (self countdownTimer: 0 showRing: false).
+					self countdownAction ]);
 		beAlwaysEnabled
 ]
 
@@ -169,7 +199,7 @@ GtPomodoroSettings >> pomodoroGoalsDescription [
 { #category : #accessing }
 GtPomodoroSettings >> pomodoroOtherDescription [
 	"<magritteDescription>"
-	^ MAMemoDescription new
+	^ MAStringDescription new
 		label: 'Other Duration';
 		beHidden;
 		priority: 2;
