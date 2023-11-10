@@ -53,6 +53,13 @@ GtPomodoroSettings class >> initialize [
 	self enable
 ]
 
+{ #category : #initialization }
+GtPomodoroSettings class >> restart [
+	self disable.
+	self cleanUp.
+	self enable
+]
+
 { #category : #accessing }
 GtPomodoroSettings class >> showRing [
 	^ ShowRing ifNil: [ ShowRing := false ]

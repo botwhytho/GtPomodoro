@@ -33,7 +33,8 @@ GtPomodoros >> addAll: aCollection [
 
 { #category : #accessing }
 GtPomodoros >> counter [
-	^ counter ifNil: [ counter := 1 ]
+	^ counter
+		ifNil: [ self ifEmpty: [ counter := 1 ] ifNotEmpty: [ counter := self size + 1 ] ]
 ]
 
 { #category : #accessing }
@@ -56,6 +57,27 @@ GtPomodoros >> gtPomodorosFor: aView [
 				addChildren: (self items
 						collect: [ :each | (each gtPomodoroFor: GtPhlowView empty) asElement ]))
 				asScrollableElement ]
+]
+
+{ #category : #initialization }
+GtPomodoros >> initialize [
+	| folder |
+	super initialize.
+	folder := '.' asFileReference / #pomodoro.
+	(folder exists
+		and: [ folder files anySatisfy: [ :aFile | aFile extension = 'json' ] ])
+		ifTrue: [ folder files
+				select: [ :aFile | aFile extension = 'json' ]
+				thenDo: [ :aFile | 
+					| json |
+					json := NeoJSONObject fromString: aFile contents.
+					self items
+						add: (GtPomodoro new
+								start: json start asDateAndTime;
+								duration: json duration asInteger;
+								end: json end asDateAndTime;
+								goals: json goals;
+								reflection: json reflection yourself) ] ]
 ]
 
 { #category : #accessing }
