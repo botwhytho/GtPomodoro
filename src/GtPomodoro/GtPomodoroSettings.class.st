@@ -9,7 +9,7 @@ Class {
 		'goals',
 		'recalculationsPerSecond',
 		'pomodoros',
-		'counter'
+		'toolbarIcon'
 	],
 	#classVars : [
 		'ShowRing',
@@ -89,9 +89,9 @@ GtPomodoroSettings >> asElement [
 								id: self class blocElementId;
 								size: 48 @ 48;
 								aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
-								icon: BrGlamorousVectorIcons timer ]
+								icon: self toolbarIcon ]
 						content: [ self asGtMagritteViewModel asElement margin: (BlInsets all: 20) ]);
-		icon: BrGlamorousVectorIcons timer
+		icon: self toolbarIcon
 ]
 
 { #category : #accessing }
@@ -146,16 +146,6 @@ GtPomodoroSettings >> countdownTimer: percentComplete showRing: showRing [
 						constraintsDo: [ :c | 
 							c horizontal matchParent.
 							c vertical matchParent ] ])) asScalableElement
-]
-
-{ #category : #accessing }
-GtPomodoroSettings >> counter [
-	^ counter ifNil: [ counter := 1 ]
-]
-
-{ #category : #accessing }
-GtPomodoroSettings >> counter: anObject [
-	counter := anObject
 ]
 
 { #category : #accessing }
@@ -283,4 +273,14 @@ GtPomodoroSettings >> recalculationsPerSecond: anInteger [
 	"Set how many times per second the percentage completion is redrawn"
 
 	recalculationsPerSecond := anInteger
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> toolbarIcon [
+	^ toolbarIcon ifNil: [ toolbarIcon := BrGlamorousVectorIcons timer ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> toolbarIcon: aStencil [
+	toolbarIcon := aStencil
 ]
