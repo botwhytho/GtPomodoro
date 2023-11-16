@@ -62,7 +62,7 @@ GtPomodoroSettings class >> restart [
 
 { #category : #accessing }
 GtPomodoroSettings class >> showRing [
-	^ ShowRing ifNil: [ ShowRing := false ]
+	^ ShowRing ifNil: [ ShowRing := true ]
 ]
 
 { #category : #accessing }
@@ -128,7 +128,7 @@ GtPomodoroSettings >> countdownAction [
 					ifTrue: [ self class toolbar
 							enqueueTask: [ iconTask stop.
 								self class worldPomodoroElement
-									icon: BrGlamorousVectorIcons timer;
+									icon: self toolbarIcon;
 									label: 'Start a Pomodoro Timer';
 									enable ] asBlTask ] ].
 	self class toolbar enqueueTask: iconTask.
@@ -284,7 +284,9 @@ GtPomodoroSettings >> recalculationsPerSecond: anInteger [
 
 { #category : #accessing }
 GtPomodoroSettings >> toolbarIcon [
-	^ toolbarIcon ifNil: [ toolbarIcon := BrGlamorousVectorIcons timer ]
+	^ toolbarIcon
+		ifNil: [ toolbarIcon := BrGlamorousVectorIcons timer asElement asScalableElement
+					asStencil ]
 ]
 
 { #category : #accessing }

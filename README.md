@@ -16,4 +16,4 @@ To depend on this package add this to your baseline:
 spec baseline: 'GtPomodoro' with: [spec repository: 'github://botwhytho/GtPomodoro:main/src']
 ```
 
-Icons made from [svg icons](https://www.onlinewebfonts.com/icon) is licensed by CC BY 4.0
+Icon path [data](https://github.com/botwhytho/GtPomodoro/blob/e89cfe214ceba7ce7ab142a4295dd3edf21d4639/src/GtPomodoro/BrGlamorousVectorIcons.extension.st#L10) is made from [this](https://www.onlinewebfonts.com/icon/464077) svg icon which is licensed under CC BY 4.0
