@@ -120,6 +120,17 @@ GtPomodoro >> gtPomodoroFor: aView [
 		stencil: self displayPomodoro
 ]
 
+{ #category : #printing }
+GtPomodoro >> printOn: aStream [
+	super printOn: aStream.
+	aStream
+		nextPutAll: ' (Starting at: ';
+		nextPutAll: self start asTime printMinutes , ' for ' , self duration asString
+				, (' minute'
+						in: [ :aString | self duration = 1 ifTrue: [ aString ] ifFalse: [ aString , 's' ] ]);
+		nextPut: $)
+]
+
 { #category : #accessing }
 GtPomodoro >> reflection [
 	^ reflection
