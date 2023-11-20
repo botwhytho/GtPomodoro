@@ -45,18 +45,31 @@ GtPomodoros >> counter: anInteger [
 { #category : #views }
 GtPomodoros >> gtPomodorosFor: aView [
 	<gtView>
-	^ aView explicit
+	| pomodoros |
+	self ifEmpty: [ ^ aView empty ].
+	pomodoros := ((self items groupedBy: [ :each | each start asDate ])
+			associations sorted: #key descending)
+			collect: [ :each | each key -> (each value sorted: #yourself ascending) ].
+	^ aView columnedTree
 		title: 'Pomodoros';
 		priority: 1;
-		stencil: [ (BrVerticalPane new
-				hMatchParent;
-				vFitContent;
-				background: Color white;
-				addAptitude: BrShadowAptitude new;
-				alignCenter;
-				addChildren: (self items
-						collect: [ :each | (each gtPomodoroFor: GtPhlowView empty) asElement ]))
-				asScrollableElement ]
+		items: pomodoros;
+		children: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ #() ] ];
+		column: 'Pomodoros'
+			text: [ :each | each isAssociation ifTrue: [ each key asString ] ifFalse: [ each asString ] ];
+		column: 'Has Reflection'
+			stencil: [ :each | 
+				each isAssociation
+					ifTrue: [ BlElement new ]
+					ifFalse: [ BrCheckbox new
+							aptitude: BrGlamorousCheckboxAptitude;
+							in: [ :aCheckbox | 
+								(each reflection isNil or: [ each reflection = 'nil' ])
+									ifTrue: [ aCheckbox uncheck ]
+									ifFalse: [ aCheckbox check ].
+								aCheckbox ];
+							disable ] ];
+		expandAll
 ]
 
 { #category : #initialization }
