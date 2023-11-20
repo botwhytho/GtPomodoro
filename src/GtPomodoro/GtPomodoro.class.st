@@ -70,8 +70,13 @@ GtPomodoro >> displayPomodoro [
 					margin: (BlInsets all: 10);
 					aptitude: BrGlamorousEditableLabelAptitude;
 					text: (self reflection ifNil: [ '' ]);
+					in: [ :aLabel | aLabel userData at: #model put: self ];
 					when: BrEditorAcceptWish
-						do: [ :aWish | self reflection: aWish text asString ]}) asStencil
+						do: [ :aWish | 
+							self reflection: aWish text asString.
+							self
+								serializeWithCounter: (GtPomodoroSettings default pomodoros
+										indexOf: (aWish target userData at: #model)) ]}) asStencil
 ]
 
 { #category : #accessing }
