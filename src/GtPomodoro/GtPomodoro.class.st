@@ -119,9 +119,45 @@ GtPomodoro >> reflection: anObject [
 ]
 
 { #category : #accessing }
-GtPomodoro >> serializeWithCounter: aCounter [
+GtPomodoro >> serializeSnippet: aTextSnippet [
+	^ NeoJSONObject
+		fromString: (String
+				streamContents: [ :s | 
+					LeJsonV4 uniqueInstance
+						serialize: aTextSnippet
+						on: s
+						prettyPrint: true ])
+]
+
+{ #category : #accessing }
+GtPomodoro >> serializeToJSON: aCounter [
 	| folder |
 	folder := ('.' asFileReference / #pomodoro) ensureCreateDirectory.
 	folder / aCounter asString , 'json'
 		writeStreamDo: [ :aStream | STONJSON put: self asDictionary onStreamPretty: aStream ]
+]
+
+{ #category : #accessing }
+GtPomodoro >> serializeWithCounter: aCounter [
+	GtPomodoroSettings default serializeWithLepiter
+		ifTrue: [ self serializeWithLepiter ]
+		ifFalse: [ self serializeToJSON: aCounter ]
+]
+
+{ #category : #accessing }
+GtPomodoro >> serializeWithLepiter [
+	| lepiterPage aTextSnippet snippetJSON serialized anUnknownSnippet |
+	lepiterPage := LeDatabasesRegistry defaultLogicalDatabase
+			pageNamed: 'GtPomodoro Entries'.
+	aTextSnippet := LeTextSnippet string: ''.
+	lepiterPage addSnippet: aTextSnippet.
+	snippetJSON := self serializeSnippet: aTextSnippet.
+	snippetJSON __type: LeUnknownSnippet leJsonV4Name.
+	snippetJSON data: self asDictionary.
+	serialized := NeoJSONWriter toStringPretty: snippetJSON.
+	anUnknownSnippet := LeUnknownSnippet new
+			jsonString: serialized
+			source: lepiterPage.
+	aTextSnippet removeSelf.
+	lepiterPage addSnippet: anUnknownSnippet
 ]

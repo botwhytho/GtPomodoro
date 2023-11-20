@@ -9,7 +9,8 @@ Class {
 		'goals',
 		'recalculationsPerSecond',
 		'pomodoros',
-		'toolbarIcon'
+		'toolbarIcon',
+		'serializeWithLepiter'
 	],
 	#classVars : [
 		'ShowRing',
@@ -289,6 +290,16 @@ GtPomodoroSettings >> recalculationsPerSecond: anInteger [
 	"Set how many times per second the percentage completion is redrawn"
 
 	recalculationsPerSecond := anInteger
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> serializeWithLepiter [
+	^ serializeWithLepiter ifNil: [ serializeWithLepiter := false ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> serializeWithLepiter: aBoolean [
+	serializeWithLepiter := aBoolean
 ]
 
 { #category : #accessing }
