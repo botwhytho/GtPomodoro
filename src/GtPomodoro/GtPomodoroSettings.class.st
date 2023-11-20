@@ -159,11 +159,10 @@ GtPomodoroSettings >> countdownTimer: percentComplete showRing: showRing [
 GtPomodoroSettings >> createPomodoro: aMemento [
 	| start aDuration |
 	start := DateAndTime now.
-	aDuration := aMemento duration asInteger.
+	aDuration := aMemento duration asInteger minutes.
 	^ GtPomodoro new
 		start: start;
 		duration: aDuration;
-		end: start + aDuration minutes;
 		goals: aMemento goals;
 		yourself
 ]

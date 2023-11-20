@@ -74,8 +74,7 @@ GtPomodoros >> initialize [
 					self items
 						add: (GtPomodoro new
 								start: json start asDateAndTime;
-								duration: json duration asInteger;
-								end: json end asDateAndTime;
+								duration: json duration asDuration;
 								goals: json goals;
 								reflection: json reflection yourself) ] ]
 ]
@@ -92,10 +91,7 @@ GtPomodoros >> valueHolder [
 					sortUsing: [ :aPomodoro | aPomodoro start ] ascending) asValueHolder.
 			valueHolder
 				whenAddedDo: [ :newValue | 
-					| folder |
-					folder := ('.' asFileReference / #pomodoro) ensureCreateDirectory.
-					folder / self counter asString , 'json'
-						writeStreamDo: [ :aStream | STONJSON put: newValue asDictionary onStreamPretty: aStream ].
+					newValue serializeWithCounter: self counter.
 					self counter: self counter + 1 ].
 			valueHolder ]
 ]

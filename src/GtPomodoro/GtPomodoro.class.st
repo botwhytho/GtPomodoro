@@ -1,10 +1,7 @@
 Class {
 	#name : #GtPomodoro,
-	#superclass : #Object,
+	#superclass : #Timespan,
 	#instVars : [
-		'start',
-		'end',
-		'duration',
 		'goals',
 		'reflection'
 	],
@@ -13,12 +10,8 @@ Class {
 
 { #category : #accessing }
 GtPomodoro >> asDictionary [
-	^ (self class slots
-		collect: [ :each | 
-			each name
-				-> ((self perform: each name)
-						in: [ :aValue | (aValue isKindOf: Number) ifTrue: [ aValue ] ifFalse: [ aValue asString ] ]) ])
-		asDictionary
+	^ ((self class superclass slots , self class slots collect: #name) , {#end}
+		collect: [ :each | each -> (self perform: each) asString ]) asDictionary
 ]
 
 { #category : #accessing }
@@ -82,26 +75,6 @@ GtPomodoro >> displayPomodoro [
 ]
 
 { #category : #accessing }
-GtPomodoro >> duration [
-	^ duration
-]
-
-{ #category : #accessing }
-GtPomodoro >> duration: anObject [
-	duration := anObject
-]
-
-{ #category : #accessing }
-GtPomodoro >> end [
-	^ end
-]
-
-{ #category : #accessing }
-GtPomodoro >> end: anObject [
-	end := anObject
-]
-
-{ #category : #accessing }
 GtPomodoro >> goals [
 	^ goals
 ]
@@ -122,12 +95,11 @@ GtPomodoro >> gtPomodoroFor: aView [
 
 { #category : #printing }
 GtPomodoro >> printOn: aStream [
-	super printOn: aStream.
 	aStream
-		nextPutAll: ' (Starting at: ';
-		nextPutAll: self start asTime printMinutes , ' for ' , self duration asString
+		nextPutAll: 'a GtPomodoro (Starting at: ';
+		nextPutAll: self start asTime printMinutes , ' for ' , self duration minutes asString
 				, (' minute'
-						in: [ :aString | self duration = 1 ifTrue: [ aString ] ifFalse: [ aString , 's' ] ]);
+						in: [ :aString | self duration minutes = 1 ifTrue: [ aString ] ifFalse: [ aString , 's' ] ]);
 		nextPut: $)
 ]
 
@@ -142,11 +114,9 @@ GtPomodoro >> reflection: anObject [
 ]
 
 { #category : #accessing }
-GtPomodoro >> start [
-	^ start
-]
-
-{ #category : #accessing }
-GtPomodoro >> start: anObject [
-	start := anObject
+GtPomodoro >> serializeWithCounter: aCounter [
+	| folder |
+	folder := ('.' asFileReference / #pomodoro) ensureCreateDirectory.
+	folder / aCounter asString , 'json'
+		writeStreamDo: [ :aStream | STONJSON put: self asDictionary onStreamPretty: aStream ]
 ]
