@@ -47,6 +47,16 @@ GtPomodoroSettings class >> enable [
 	self toolbar addItem: self asElement
 ]
 
+{ #category : #view }
+GtPomodoroSettings class >> gtPomodoroListFor: aView [
+<gtClassView>
+^ aView forward
+	title: 'Pomodoros By Day';
+	priority: 5;
+	object: self default pomodoros;
+	view: #gtPomodorosFor:
+]
+
 { #category : #initialization }
 GtPomodoroSettings class >> initialize [
 	super initialize.
