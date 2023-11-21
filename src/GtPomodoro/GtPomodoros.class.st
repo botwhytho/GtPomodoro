@@ -74,22 +74,37 @@ GtPomodoros >> gtPomodorosFor: aView [
 
 { #category : #initialization }
 GtPomodoros >> initialize [
-	| folder |
 	super initialize.
-	folder := '.' asFileReference / #pomodoro.
-	(folder exists
-		and: [ folder files anySatisfy: [ :aFile | aFile extension = 'json' ] ])
-		ifTrue: [ folder files
-				select: [ :aFile | aFile extension = 'json' ]
-				thenDo: [ :aFile | 
+	GtPomodoroSettings default serializeWithLepiter
+		ifTrue: [ | page |
+			page := LeDatabasesRegistry defaultLogicalDatabase
+					pageNamed: 'GtPomodoro Entries'.
+			page children asArray
+				select: [ :each | each isKindOf: LeUnknownSnippet ]
+				thenDo: [ :each | 
 					| json |
-					json := NeoJSONObject fromString: aFile contents.
+					json := (NeoJSONObject fromString: each jsonString) at: 'data'.
 					self items
 						add: (GtPomodoro new
 								start: json start asDateAndTime;
 								duration: json duration asDuration;
 								goals: json goals;
 								reflection: json reflection yourself) ] ]
+		ifFalse: [ | folder |
+			folder := '.' asFileReference / #pomodoro.
+			(folder exists
+				and: [ folder files anySatisfy: [ :aFile | aFile extension = 'json' ] ])
+				ifTrue: [ folder files
+						select: [ :aFile | aFile extension = 'json' ]
+						thenDo: [ :aFile | 
+							| json |
+							json := NeoJSONObject fromString: aFile contents.
+							self items
+								add: (GtPomodoro new
+										start: json start asDateAndTime;
+										duration: json duration asDuration;
+										goals: json goals;
+										reflection: json reflection yourself) ] ] ]
 ]
 
 { #category : #accessing }
