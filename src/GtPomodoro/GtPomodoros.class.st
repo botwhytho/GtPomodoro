@@ -10,57 +10,20 @@ Class {
 	#category : #GtPomodoro
 }
 
-{ #category : #views }
-GtPomodoros class >> gtPomodorosFor: aView [
-	<gtView>
-	<gtClassView>
-	^ aView forward
-		title: 'Pomodoros';
-		priority: -1;
-		object: GtPomodoroSettings default pomodoros;
-		view: #gtPomodorosFor:
-]
-
-{ #category : #'instance creation' }
-GtPomodoros class >> newFrom: aCollection [
-	^ self withAll: aCollection
-]
-
 { #category : #accessing }
-GtPomodoros >> add: anItem [
-	self valueHolder add: anItem
-]
-
-{ #category : #accessing }
-GtPomodoros >> addAll: aCollection [
-	self valueHolder addAll: aCollection
-]
-
-{ #category : #accessing }
-GtPomodoros >> counter [
-	^ counter
-		ifNil: [ self ifEmpty: [ counter := 1 ] ifNotEmpty: [ counter := self size + 1 ] ]
-]
-
-{ #category : #accessing }
-GtPomodoros >> counter: anInteger [
-	counter := anInteger
-]
-
-{ #category : #accessing }
-GtPomodoros >> dailyTimePlot: somePomodoros [
+GtPomodoros class >> dailyTimePlot: somePomodoros [
 	^ GtPlotterHorizontalValueProjectionsElement new
 		padding: (BlInsets
 				top: 1
-				left: 30
+				left: 10
 				bottom: 1
-				right: 30);
+				right: 10);
 		margin: (BlInsets all: 4);
 		aptitude: BrShadowAptitude;
 		background: Color white;
 		scale: (GtPlotterLinearScale new
 				domainFrom: 0
-				to: Date today asDuration asMinutes asInteger);
+				to: (24 * 60));
 		scaleData: [ :each | (each start asDuration asMinutes + (each duration asMinutes / 2)) rounded ];
 		constraintsDo: [ :c | c vertical fitContent ];
 		valueElement: [ :aGtPlotterSingleScaleContext | BlElement new ];
@@ -80,37 +43,18 @@ GtPomodoros >> dailyTimePlot: somePomodoros [
 ]
 
 { #category : #views }
-GtPomodoros >> gtPomodorosFor: aView [
+GtPomodoros class >> gtPomodorosFor: aView [
 	<gtView>
-	| pomodoros |
-	self ifEmpty: [ ^ aView empty ].
-	pomodoros := (self groupedBy: [ :each | each start asDate ]) associations
-			sorted: #key descending.
-	^ aView columnedTree
-		title: 'Pomodoros';
-		priority: 1;
-		items: pomodoros;
-		children: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ #() ] ];
-		column: 'Pomodoros'
-			text: [ :each | each isAssociation ifTrue: [ each key asString ] ifFalse: [ each asString ] ];
-		column: 'Has Reflection'
-			stencil: [ :each | 
-				each isAssociation
-					ifTrue: [ BlElement new ]
-					ifFalse: [ BrCheckbox new
-							aptitude: BrGlamorousCheckboxAptitude;
-							in: [ :aCheckbox | 
-								(each reflection isNil or: [ each reflection = 'nil' ])
-									ifTrue: [ aCheckbox uncheck ]
-									ifFalse: [ aCheckbox check ].
-								aCheckbox ];
-							disable ] ];
-		send: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ each ] ];
-		expandAll
+	<gtClassView>
+	^ aView forward
+		title: 'Pomodoros By Day';
+		priority: -1;
+		object: GtPomodoroSettings default pomodoros;
+		view: #gtPomodorosFor:
 ]
 
 { #category : #accessing }
-GtPomodoros >> hourlyTicksElement [
+GtPomodoros class >> hourlyTicksElement [
 	| aContainer ticksObject theTicks aLength |
 	ticksObject := GtPlotterNumberTicks
 			from: 0
@@ -122,11 +66,7 @@ GtPomodoros >> hourlyTicksElement [
 
 	aContainer := BlElement new
 			layout: BlFrameLayout new;
-			padding: (BlInsets
-					top: 30
-					left: 30
-					bottom: 10
-					right: 30);
+			padding: (BlInsets all: 10);
 			constraintsDo: [ :c | 
 				c horizontal matchParent.
 				c vertical matchParent ];
@@ -159,6 +99,98 @@ GtPomodoros >> hourlyTicksElement [
 							margin: (BlInsets top: 13);
 							constraintsDo: [ :c | c frame horizontal alignCenterAt: (eachTick - theTicks first) / aLength ] ]).
 	^ aContainer
+]
+
+{ #category : #'instance creation' }
+GtPomodoros class >> newFrom: aCollection [
+	^ self withAll: aCollection
+]
+
+{ #category : #accessing }
+GtPomodoros >> add: anItem [
+	self valueHolder add: anItem
+]
+
+{ #category : #accessing }
+GtPomodoros >> addAll: aCollection [
+	self valueHolder addAll: aCollection
+]
+
+{ #category : #accessing }
+GtPomodoros >> counter [
+	^ counter
+		ifNil: [ self ifEmpty: [ counter := 1 ] ifNotEmpty: [ counter := self size + 1 ] ]
+]
+
+{ #category : #accessing }
+GtPomodoros >> counter: anInteger [
+	counter := anInteger
+]
+
+{ #category : #views }
+GtPomodoros >> groupByDay [
+	^ self groupedBy: [ :each | each start asDate ]
+]
+
+{ #category : #views }
+GtPomodoros >> gtPomodorosFor: aView [
+	<gtView>
+	| pomodoros |
+	self ifEmpty: [ ^ aView empty ].
+	pomodoros := self groupByDay associations sorted: #key descending.
+	^ aView columnedTree
+		title: 'Pomodoros By Day';
+		priority: 1;
+		items: pomodoros;
+		children: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ #() ] ];
+		column: 'Pomodoros'
+			text: [ :each | each isAssociation ifTrue: [ each key asString ] ifFalse: [ each asString ] ];
+		column: 'Has Reflection'
+			stencil: [ :each | 
+				each isAssociation
+					ifTrue: [ BlElement new ]
+					ifFalse: [ BrCheckbox new
+							aptitude: BrGlamorousCheckboxAptitude;
+							in: [ :aCheckbox | 
+								(each reflection isNil or: [ each reflection = 'nil' ])
+									ifTrue: [ aCheckbox uncheck ]
+									ifFalse: [ aCheckbox check ].
+								aCheckbox ];
+							disable ] ];
+		send: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ each ] ];
+		expandAll
+]
+
+{ #category : #accessing }
+GtPomodoros >> gtWeeklySummaryFor: aView [
+	<gtView>
+	| days |
+	days := self groupByDay associations.
+	days size > 7
+		ifTrue: [ aView text
+				text: 'You need to build a weekly picker to change weeks, or re-use calendar view' ].
+	^ aView columnedList
+		title: 'Weekly Summary';
+		priority: 0;
+		items: [ (self groupByDay associations
+				sorted: [ :each | Week indexOfDay: each key dayOfWeekName ] ascending)
+				, {nil -> nil} ];
+		column: 'Day'
+			stencil: [ :each | 
+				each key
+					ifNil: [ BlElement new ]
+					ifNotNil: [ BrButton new
+							aptitude: BrGlamorousButtonWithLabelAptitude;
+							label: each key weekday;
+							action: [ :anElement | anElement phlow spawnObject: each value ] ] ]
+			weight: 0.1;
+		column: 'Tracked Time'
+			stencil: [ :each | 
+				each key
+					ifNil: [ self class hourlyTicksElement ]
+					ifNotNil: [ self class dailyTimePlot: each value ] ]
+			weight: 0.9;
+		send: [  ]
 ]
 
 { #category : #initialization }
