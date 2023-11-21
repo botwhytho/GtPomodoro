@@ -3,7 +3,8 @@ Class {
 	#superclass : #Timespan,
 	#instVars : [
 		'goals',
-		'reflection'
+		'reflection',
+		'uid'
 	],
 	#category : #GtPomodoro
 }
@@ -149,15 +150,36 @@ GtPomodoro >> serializeWithLepiter [
 	| lepiterPage aTextSnippet snippetJSON serialized anUnknownSnippet |
 	lepiterPage := LeDatabasesRegistry defaultLogicalDatabase
 			pageNamed: 'GtPomodoro Entries'.
-	aTextSnippet := LeTextSnippet string: ''.
-	lepiterPage addSnippet: aTextSnippet.
-	snippetJSON := self serializeSnippet: aTextSnippet.
-	snippetJSON __type: LeUnknownSnippet leJsonV4Name.
-	snippetJSON data: self asDictionary.
-	serialized := NeoJSONWriter toStringPretty: snippetJSON.
-	anUnknownSnippet := LeUnknownSnippet new
-			jsonString: serialized
-			source: lepiterPage.
-	aTextSnippet removeSelf.
-	lepiterPage addSnippet: anUnknownSnippet
+	lepiterPage children
+		detect: [ :aSnippet | aSnippet uidString = self uid ]
+		ifFound: [ :foundSnippet | 
+			snippetJSON := self serializeSnippet: foundSnippet.
+			snippetJSON
+				at: 'data'
+				at: 'reflection'
+				put: self reflection.
+			serialized := NeoJSONWriter toStringPretty: snippetJSON.
+			foundSnippet jsonString: serialized source: lepiterPage ]
+		ifNone: [ aTextSnippet := LeTextSnippet string: ''.
+			lepiterPage addSnippet: aTextSnippet.
+			self uid: aTextSnippet uidString.
+			snippetJSON := self serializeSnippet: aTextSnippet.
+			snippetJSON __type: LeUnknownSnippet leJsonV4Name.
+			snippetJSON data: self asDictionary.
+			serialized := NeoJSONWriter toStringPretty: snippetJSON.
+			anUnknownSnippet := LeUnknownSnippet new
+					jsonString: serialized
+					source: lepiterPage.
+			aTextSnippet removeSelf.
+			lepiterPage addSnippet: anUnknownSnippet ]
+]
+
+{ #category : #accessing }
+GtPomodoro >> uid [
+	^ uid
+]
+
+{ #category : #accessing }
+GtPomodoro >> uid: anObject [
+	uid := anObject
 ]
