@@ -171,7 +171,8 @@ GtPomodoro >> serializeWithLepiter [
 					jsonString: serialized
 					source: lepiterPage.
 			aTextSnippet removeSelf.
-			lepiterPage addSnippet: anUnknownSnippet ]
+			lepiterPage addSnippet: anUnknownSnippet.
+			self uid: anUnknownSnippet uidString ]
 ]
 
 { #category : #accessing }
