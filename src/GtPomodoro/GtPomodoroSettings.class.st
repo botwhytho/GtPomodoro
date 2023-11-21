@@ -294,6 +294,7 @@ GtPomodoroSettings >> recalculationsPerSecond: anInteger [
 
 { #category : #accessing }
 GtPomodoroSettings >> serializeWithLepiter [
+	self flag: #TODO. "Import existing data from custom JSON files into Lepiter page before toggling the default."
 	^ serializeWithLepiter ifNil: [ serializeWithLepiter := false ]
 ]
 

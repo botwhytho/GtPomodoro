@@ -21,6 +21,11 @@ GtPomodoros class >> gtPomodorosFor: aView [
 		view: #gtPomodorosFor:
 ]
 
+{ #category : #'instance creation' }
+GtPomodoros class >> newFrom: aCollection [
+	^ self withAll: aCollection
+]
+
 { #category : #accessing }
 GtPomodoros >> add: anItem [
 	self valueHolder add: anItem
@@ -42,14 +47,45 @@ GtPomodoros >> counter: anInteger [
 	counter := anInteger
 ]
 
+{ #category : #accessing }
+GtPomodoros >> dailyTimePlot: somePomodoros [
+	^ GtPlotterHorizontalValueProjectionsElement new
+		padding: (BlInsets
+				top: 1
+				left: 30
+				bottom: 1
+				right: 30);
+		margin: (BlInsets all: 4);
+		aptitude: BrShadowAptitude;
+		background: Color white;
+		scale: (GtPlotterLinearScale new
+				domainFrom: 0
+				to: Date today asDuration asMinutes asInteger);
+		scaleData: [ :each | (each start asDuration asMinutes + (each duration asMinutes / 2)) rounded ];
+		constraintsDo: [ :c | c vertical fitContent ];
+		valueElement: [ :aGtPlotterSingleScaleContext | BlElement new ];
+		valueStyle: [ :anElement :aGtPlotterSingleScaleContext | 
+			anElement
+				border: (BlBorder paint: Color black width: 1);
+				background: Color lightGray;
+				constraintsDo: [ :c | 
+					c horizontal matchParent.
+					c frame horizontal
+						weight: aGtPlotterSingleScaleContext originalValue duration minutes / (24 * 60) ];
+				when: BlClickEvent
+					do: [ :anEvent | anEvent target phlow spawnObject: aGtPlotterSingleScaleContext originalValue ] ];
+		values: somePomodoros;
+		when: BlDoubleClickEvent
+			do: [ :anEvent | anEvent target phlow spawnObject: somePomodoros ]
+]
+
 { #category : #views }
 GtPomodoros >> gtPomodorosFor: aView [
 	<gtView>
 	| pomodoros |
 	self ifEmpty: [ ^ aView empty ].
-	pomodoros := ((self items groupedBy: [ :each | each start asDate ])
-			associations sorted: #key descending)
-			collect: [ :each | each key -> (each value sorted: #yourself ascending) ].
+	pomodoros := (self groupedBy: [ :each | each start asDate ]) associations
+			sorted: #key descending.
 	^ aView columnedTree
 		title: 'Pomodoros';
 		priority: 1;
@@ -69,42 +105,97 @@ GtPomodoros >> gtPomodorosFor: aView [
 									ifFalse: [ aCheckbox check ].
 								aCheckbox ];
 							disable ] ];
+		send: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ each ] ];
 		expandAll
+]
+
+{ #category : #accessing }
+GtPomodoros >> hourlyTicksElement [
+	| aContainer ticksObject theTicks aLength |
+	ticksObject := GtPlotterNumberTicks
+			from: 0
+			to: 24
+			count: 24.
+	theTicks := ticksObject asArray.
+	aLength := (theTicks first - theTicks last) abs.
+	aLength isZero ifTrue: [ aLength := 1 ].
+
+	aContainer := BlElement new
+			layout: BlFrameLayout new;
+			padding: (BlInsets
+					top: 30
+					left: 30
+					bottom: 10
+					right: 30);
+			constraintsDo: [ :c | 
+				c horizontal matchParent.
+				c vertical matchParent ];
+			addChild: (BlElement new
+					background: Color gray;
+					constraintsDo: [ :c | 
+						c horizontal matchParent.
+						c vertical exact: 1 ]);
+			addChildren: ({theTicks first.
+					theTicks last}
+					collect: [ :eachTick | 
+						BlElement new
+							background: Color gray;
+							constraintsDo: [ :c | 
+								c frame horizontal alignCenterAt: (eachTick - theTicks first) / aLength.
+								c horizontal exact: 1.
+								c vertical exact: 10 ] ]);
+			addChildren: (theTicks
+					collect: [ :eachTick | 
+						BlElement new
+							background: Color gray;
+							constraintsDo: [ :c | 
+								c frame horizontal alignCenterAt: (eachTick - theTicks first) / aLength.
+								c horizontal exact: 1.
+								c vertical exact: 10 ] ]);
+			addChildren: (theTicks
+					collect: [ :eachTick | 
+						BlTextElement new
+							text: (eachTick printString asRopedText thin fontSize: 9);
+							margin: (BlInsets top: 13);
+							constraintsDo: [ :c | c frame horizontal alignCenterAt: (eachTick - theTicks first) / aLength ] ]).
+	^ aContainer
 ]
 
 { #category : #initialization }
 GtPomodoros >> initialize [
 	super initialize.
-	GtPomodoroSettings default serializeWithLepiter
-		ifTrue: [ | page |
-			page := LeDatabasesRegistry defaultLogicalDatabase
-					pageNamed: 'GtPomodoro Entries'.
-			page children asArray
-				select: [ :each | each isKindOf: LeUnknownSnippet ]
-				thenDo: [ :each | 
-					| json |
-					json := (NeoJSONObject fromString: each jsonString) at: 'data'.
-					self items
-						add: (GtPomodoro new
-								start: json start asDateAndTime;
-								duration: json duration asDuration;
-								goals: json goals;
-								reflection: json reflection yourself) ] ]
-		ifFalse: [ | folder |
-			folder := '.' asFileReference / #pomodoro.
-			(folder exists
-				and: [ folder files anySatisfy: [ :aFile | aFile extension = 'json' ] ])
-				ifTrue: [ folder files
-						select: [ :aFile | aFile extension = 'json' ]
-						thenDo: [ :aFile | 
+	self flag: #TODO.	"Below is a code smell, should only load from disk by calling code as this collection just became more generic as can re-use for daily/weekly views"
+	thisContext sender sender selector = #withAll:
+		ifFalse: [ GtPomodoroSettings default serializeWithLepiter
+				ifTrue: [ | page |
+					page := LeDatabasesRegistry defaultLogicalDatabase
+							pageNamed: 'GtPomodoro Entries'.
+					page children asArray
+						select: [ :each | each isKindOf: LeUnknownSnippet ]
+						thenDo: [ :each | 
 							| json |
-							json := NeoJSONObject fromString: aFile contents.
+							json := (NeoJSONObject fromString: each jsonString) at: 'data'.
 							self items
 								add: (GtPomodoro new
 										start: json start asDateAndTime;
 										duration: json duration asDuration;
 										goals: json goals;
-										reflection: json reflection yourself) ] ] ]
+										reflection: json reflection yourself) ] ]
+				ifFalse: [ | folder |
+					folder := '.' asFileReference / #pomodoro.
+					(folder exists
+						and: [ folder files anySatisfy: [ :aFile | aFile extension = 'json' ] ])
+						ifTrue: [ folder files
+								select: [ :aFile | aFile extension = 'json' ]
+								thenDo: [ :aFile | 
+									| json |
+									json := NeoJSONObject fromString: aFile contents.
+									self items
+										add: (GtPomodoro new
+												start: json start asDateAndTime;
+												duration: json duration asDuration;
+												goals: json goals;
+												reflection: json reflection yourself) ] ] ] ]
 ]
 
 { #category : #accessing }
