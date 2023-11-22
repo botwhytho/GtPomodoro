@@ -164,15 +164,13 @@ GtPomodoros >> gtPomodorosFor: aView [
 { #category : #accessing }
 GtPomodoros >> gtWeeklySummaryFor: aView [
 	<gtView>
-	| days |
+	| days weeks |
 	days := self groupByDay associations.
-	days size > 7
-		ifTrue: [ aView text
-				text: 'You need to build a weekly picker to change weeks, or re-use calendar view' ].
+	weeks := (days collectAsSet: [ :each | each key asWeek ]) asArray sorted.
 	^ aView columnedList
 		title: 'Weekly Summary';
 		priority: 0;
-		items: [ (self groupByDay associations
+		items: [ ((days select: [ :aDay | aDay key asWeek = weeks last ])
 				sorted: [ :each | Week indexOfDay: each key dayOfWeekName ] ascending)
 				, {nil -> nil} ];
 		column: 'Day'
@@ -190,7 +188,20 @@ GtPomodoros >> gtWeeklySummaryFor: aView [
 					ifNil: [ self class hourlyTicksElement ]
 					ifNotNil: [ self class dailyTimePlot: each value ] ]
 			weight: 0.9;
-		send: [  ]
+		send: [  ];
+		actionDropdownButtonIcon: [ BrGlamorousVectorIcons calendar asElement asScalableElement size: 20 @ 20 ]
+					asStencil
+			content: [ :aButton :aBrTab | 
+				| element |
+				element := GtCalendarElement forDate: Date today.
+				element
+					when: GtCalendarDateClickedEvent
+					do: [ :anEvent | 
+						anEvent consumed: true.
+						aButton fireEvent: BrDropdownHideWish new.
+						aButton phlow
+							spawnObject: (self
+									select: [ :aPomodoro | aPomodoro start asDate asWeek = anEvent date asWeek ]) ] ]
 ]
 
 { #category : #initialization }
