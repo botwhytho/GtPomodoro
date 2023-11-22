@@ -149,10 +149,13 @@ GtPomodoro >> serializeWithCounter: aCounter [
 GtPomodoro >> serializeWithLepiter [
 	| lepiterPage aTextSnippet snippetJSON serialized anUnknownSnippet |
 	lepiterPage := LeDatabasesRegistry defaultLogicalDatabase
-			at: 'GtPomodoro Entries'
-			ifAbsent: [ LeDatabasesRegistry defaultLogicalDatabase
-					addPage: (LePage named: 'GtPomodoro Entries') ]
-			forPageType: LeNamedPageType.
+			pageNamed: 'GtPomodoro Entries'
+			ifAbsent: [ | newPage |
+				newPage := LePage named: 'GtPomodoro Entries'.
+				LeDatabasesRegistry defaultLogicalDatabase addPage: newPage.
+				newPage addFirstSnippet: (LeTextSnippet string: '').
+				newPage ].
+	lepiterPage traceCr.
 	lepiterPage children
 		detect: [ :aSnippet | aSnippet uidString = self uid ]
 		ifFound: [ :foundSnippet | 
