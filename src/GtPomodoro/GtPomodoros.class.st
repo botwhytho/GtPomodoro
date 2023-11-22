@@ -223,7 +223,12 @@ GtPomodoros >> initialize [
 		ifFalse: [ GtPomodoroSettings default serializeWithLepiter
 				ifTrue: [ | page |
 					page := LeDatabasesRegistry defaultLogicalDatabase
-							pageNamed: 'GtPomodoro Entries'.
+							pageNamed: 'GtPomodoro Entries'
+							ifAbsent: [ | newPage |
+								newPage := LePage named: 'GtPomodoro Entries'.
+								LeDatabasesRegistry defaultLogicalDatabase addPage: newPage.
+								newPage addFirstSnippet: (LeTextSnippet string: '').
+								newPage ].
 					page children asArray
 						select: [ :each | each isKindOf: LeUnknownSnippet ]
 						thenDo: [ :each | 
