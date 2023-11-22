@@ -103,7 +103,7 @@ GtPomodoro >> gtPomodoroFor: aView [
 GtPomodoro >> printOn: aStream [
 	aStream
 		nextPutAll: 'a GtPomodoro (Starting at: ';
-		nextPutAll: self start asTime printMinutes , ' for ' , self duration minutes asString
+		nextPutAll: self start asTime printMinutes , ' for ' , self duration asMinutes rounded asString
 				, (' minute'
 						in: [ :aString | self duration minutes = 1 ifTrue: [ aString ] ifFalse: [ aString , 's' ] ]);
 		nextPut: $)

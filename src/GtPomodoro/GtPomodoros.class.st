@@ -34,7 +34,7 @@ GtPomodoros class >> dailyTimePlot: somePomodoros [
 				constraintsDo: [ :c | 
 					c horizontal matchParent.
 					c frame horizontal
-						weight: aGtPlotterSingleScaleContext originalValue duration minutes / (24 * 60) ];
+						weight: aGtPlotterSingleScaleContext originalValue duration asMinutes rounded / (24 * 60) ];
 				when: BlClickEvent
 					do: [ :anEvent | anEvent target phlow spawnObject: aGtPlotterSingleScaleContext originalValue ] ];
 		values: somePomodoros;
