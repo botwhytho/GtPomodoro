@@ -64,7 +64,7 @@ GtPomodoroSettings class >> gtPomodorosFor: aView [
 <gtClassView>
 ^ aView forward
 	title: 'Pomodoros By Day';
-	priority: 5;
+	priority: 11;
 	object: self default pomodoros;
 	view: #gtPomodorosFor:
 ]
@@ -74,7 +74,7 @@ GtPomodoroSettings class >> gtWeeklySummaryFor: aView [
 <gtClassView>
 ^ aView forward
 	title: 'Weekly Summary';
-	priority: 1;
+	priority: 10;
 	object: self default pomodoros;
 	view: #gtWeeklySummaryFor:
 ]
