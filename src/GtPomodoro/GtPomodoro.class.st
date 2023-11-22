@@ -148,9 +148,11 @@ GtPomodoro >> serializeWithCounter: aCounter [
 { #category : #accessing }
 GtPomodoro >> serializeWithLepiter [
 	| lepiterPage aTextSnippet snippetJSON serialized anUnknownSnippet |
-	self flag: #TODO. "Create page if doesn't exist."
 	lepiterPage := LeDatabasesRegistry defaultLogicalDatabase
-			pageNamed: 'GtPomodoro Entries'.
+			at: 'GtPomodoro Entries'
+			ifAbsent: [ LeDatabasesRegistry defaultLogicalDatabase
+					addPage: (LePage named: 'GtPomodoro Entries') ]
+			forPageType: LeNamedPageType.
 	lepiterPage children
 		detect: [ :aSnippet | aSnippet uidString = self uid ]
 		ifFound: [ :foundSnippet | 
