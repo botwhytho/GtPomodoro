@@ -48,14 +48,35 @@ GtPomodoroSettings class >> enable [
 	self toolbar addItem: self asElement
 ]
 
+{ #category : #inspecting }
+GtPomodoroSettings class >> gtInspectActionFor: anAction [
+	<gtAction>
+	<gtClassAction>
+	^ anAction button
+		icon: BrGlamorousVectorIcons inspect;
+		tooltip: 'Default Instance Pomodoros';
+		priority: 1;
+		action: [ :aButton | aButton phlow spawnObject: self default pomodoros ]
+]
+
 { #category : #view }
-GtPomodoroSettings class >> gtPomodoroListFor: aView [
+GtPomodoroSettings class >> gtPomodorosFor: aView [
 <gtClassView>
 ^ aView forward
 	title: 'Pomodoros By Day';
 	priority: 5;
 	object: self default pomodoros;
 	view: #gtPomodorosFor:
+]
+
+{ #category : #view }
+GtPomodoroSettings class >> gtWeeklySummaryFor: aView [
+<gtClassView>
+^ aView forward
+	title: 'Weekly Summary';
+	priority: 1;
+	object: self default pomodoros;
+	view: #gtWeeklySummaryFor:
 ]
 
 { #category : #initialization }

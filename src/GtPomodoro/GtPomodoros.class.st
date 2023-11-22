@@ -48,9 +48,20 @@ GtPomodoros class >> gtPomodorosFor: aView [
 	<gtClassView>
 	^ aView forward
 		title: 'Pomodoros By Day';
-		priority: -1;
+		priority: 5;
 		object: GtPomodoroSettings default pomodoros;
 		view: #gtPomodorosFor:
+]
+
+{ #category : #views }
+GtPomodoros class >> gtWeeklySummaryFor: aView [
+	<gtView>
+	<gtClassView>
+	^ aView forward
+		title: 'Pomodoros By Day';
+		priority: 1;
+		object: GtPomodoroSettings default pomodoros;
+		view: #gtWeeklySummaryFor:
 ]
 
 { #category : #accessing }
@@ -140,7 +151,7 @@ GtPomodoros >> gtPomodorosFor: aView [
 	pomodoros := self groupByDay associations sorted: #key descending.
 	^ aView columnedTree
 		title: 'Pomodoros By Day';
-		priority: 1;
+		priority: 5;
 		items: pomodoros;
 		children: [ :each | each isAssociation ifTrue: [ each value ] ifFalse: [ #() ] ];
 		column: 'Pomodoros'
@@ -244,6 +255,18 @@ GtPomodoros >> initialize [
 { #category : #accessing }
 GtPomodoros >> items [
 	^ items ifNil: [ items := self valueHolder value ]
+]
+
+{ #category : #printing }
+GtPomodoros >> printOn: aStream [
+	super printOn: aStream.
+	aStream
+		nextPut: $(;
+		nextPutAll: (self groupByDay keys
+				in: [ :someDates | someDates min asString , ' - ' , someDates max asString ]);
+		nextPutAll: ' [';
+		nextPutAll: self size asString , ' items';
+		nextPutAll: '])'
 ]
 
 { #category : #accessing }
