@@ -10,6 +10,11 @@ Class {
 }
 
 { #category : #accessing }
+GtPomodoro class >> dataPageName [
+	^ 'GtPomodoro Entries'
+]
+
+{ #category : #accessing }
 GtPomodoro >> asDictionary [
 	^ ((self class superclass slots , self class slots collect: #name) , {#end}
 		collect: [ :each | each -> (self perform: each) asString ]) asDictionary
@@ -149,9 +154,9 @@ GtPomodoro >> serializeWithCounter: aCounter [
 GtPomodoro >> serializeWithLepiter [
 	| lepiterPage aTextSnippet snippetJSON serialized anUnknownSnippet |
 	lepiterPage := LeDatabasesRegistry defaultLogicalDatabase
-			pageNamed: 'GtPomodoro Entries'
+			pageNamed: self class dataPageName
 			ifAbsent: [ | newPage |
-				newPage := LePage named: 'GtPomodoro Entries'.
+				newPage := LePage named: self class dataPageName.
 				LeDatabasesRegistry defaultLogicalDatabase addPage: newPage.
 				newPage addFirstSnippet: (LeTextSnippet string: '').
 				newPage ].
