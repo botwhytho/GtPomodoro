@@ -155,7 +155,6 @@ GtPomodoro >> serializeWithLepiter [
 				LeDatabasesRegistry defaultLogicalDatabase addPage: newPage.
 				newPage addFirstSnippet: (LeTextSnippet string: '').
 				newPage ].
-	lepiterPage traceCr.
 	lepiterPage children
 		detect: [ :aSnippet | aSnippet uidString = self uid ]
 		ifFound: [ :foundSnippet | 
