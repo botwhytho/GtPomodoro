@@ -139,7 +139,7 @@ GtPomodoros >> counter: anInteger [
 ]
 
 { #category : #views }
-GtPomodoros >> groupByDay [
+GtPomodoros >> groupedByDay [
 	^ self groupedBy: [ :each | each start asDate ]
 ]
 
@@ -148,7 +148,7 @@ GtPomodoros >> gtPomodorosFor: aView [
 	<gtView>
 	| pomodoros |
 	self ifEmpty: [ ^ aView empty ].
-	pomodoros := self groupByDay associations sorted: #key descending.
+	pomodoros := self groupedByDay associations sorted: #key descending.
 	^ aView columnedTree
 		title: 'Pomodoros By Day';
 		priority: 5;
@@ -176,7 +176,7 @@ GtPomodoros >> gtPomodorosFor: aView [
 GtPomodoros >> gtWeeklySummaryFor: aView [
 	<gtView>
 	| days weeks |
-	days := self groupByDay associations.
+	days := self groupedByDay associations.
 	weeks := (days collectAsSet: [ :each | each key asWeek ]) asArray sorted.
 	^ aView columnedList
 		title: 'Weekly Summary';
@@ -267,7 +267,7 @@ GtPomodoros >> printOn: aStream [
 	super printOn: aStream.
 	aStream
 		nextPut: $(;
-		nextPutAll: (self groupByDay keys
+		nextPutAll: (self groupedByDay keys
 				in: [ :someDates | someDates min asString , ' - ' , someDates max asString ]);
 		nextPutAll: ' [';
 		nextPutAll: self size asString , ' items';
