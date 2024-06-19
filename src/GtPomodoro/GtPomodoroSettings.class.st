@@ -144,6 +144,7 @@ GtPomodoroSettings >> countdownAction [
 	iconTask := BlRepeatedTaskAction new
 			delay: (1 / self recalculationsPerSecond) second;
 			action: [ timeLeft := timeLeft - (1 / self recalculationsPerSecond).
+				timeLeft = 60 ifTrue: [ self osNativeNotify: '1 minute left!' ].
 				timeLeft < 60
 					ifTrue: [ timeTask isRunning ifTrue: [ timeTask stop ].
 						self class worldPomodoroElement
@@ -159,6 +160,7 @@ GtPomodoroSettings >> countdownAction [
 				timeLeft = 0
 					ifTrue: [ self class toolbar
 							enqueueTask: [ iconTask stop.
+								self osNativeNotify: 'Time is Up'.
 								self class worldPomodoroElement
 									icon: self toolbarIcon;
 									label: 'Start a Pomodoro Timer';
@@ -254,6 +256,17 @@ GtPomodoroSettings >> magritteCancelAction [
 		onSuccessCallback: (GtMagritteCallback new
 				action: [ :aModel :aButton :aMemento :aDescription | aButton fireEvent: BrDropdownHideWish new ]);
 		beAlwaysEnabled
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> osNativeNotify: aString [
+	OSPlatform current isLinux
+		ifTrue: [ GtExternalProcessBuilder new
+				command: 'bash';
+				args: {'-c'.
+						'notify-send -a "Glamorous Toolkit" -i ~/Downloads/gt.svg "' , aString
+							, '" && aplay ~/Documents/Audacity/icq.wav'};
+				spawn ]
 ]
 
 { #category : #accessing }
