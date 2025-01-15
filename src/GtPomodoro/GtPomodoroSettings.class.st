@@ -265,7 +265,7 @@ GtPomodoroSettings >> osNativeNotify: aString [
 				command: 'bash';
 				args: {'-c'.
 						'notify-send -a "Glamorous Toolkit" -i ~/Downloads/gt.svg "' , aString
-							, '" && aplay ~/Documents/Audacity/icq.wav'};
+							, '" && aplay ~/Documents/Audacity/icq.wav &'};
 				spawn ]
 ]
 
