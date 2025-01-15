@@ -179,7 +179,7 @@ GtPomodoroSettings >> countdownTimer: percentComplete showRing: showRing [
 		addChildren: ((showRing ifTrue: [ annulusSectors ] ifFalse: [ annulusSectors allButLast ])
 				collect: [ :each | 
 					BlElement new
-						geometry: (BlAnnulusSector new
+						geometry: (BlAnnulusSectorGeometry new
 								startAngle: each key first;
 								endAngle: each key last);
 						background: each value;
