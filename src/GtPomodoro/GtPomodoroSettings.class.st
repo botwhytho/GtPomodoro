@@ -10,7 +10,9 @@ Class {
 		'recalculationsPerSecond',
 		'pomodoros',
 		'toolbarIcon',
-		'serializeWithLepiter'
+		'serializeWithLepiter',
+		'dropdownAptitude',
+		'menu'
 	],
 	#classVars : [
 		'ShowRing',
@@ -40,7 +42,7 @@ GtPomodoroSettings class >> defaultDurations [
 
 { #category : #accessing }
 GtPomodoroSettings class >> disable [
-	self toolbar removeItem: self worldPomodoroElement
+	[ self toolbar removeItem: self worldPomodoroElement ] on: NotFound do: [  ]
 ]
 
 { #category : #initialization }
@@ -122,14 +124,8 @@ GtPomodoroSettings >> asElement [
 		id: self class blocElementId;
 		size: 48 @ 48;
 		label: 'Start a Pomodoro Timer';
-		aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude
-				+ (BrGlamorousWithDropdownAptitude
-						handle: [ BrButton new
-								id: self class blocElementId;
-								size: 48 @ 48;
-								aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
-								icon: self toolbarIcon ]
-						content: [ self asGtMagritteViewModel asElement margin: (BlInsets all: 20) ]);
+		aptitude: BrGlamorousButtonWithIconAptitude + self dropdown
+				- BrGlamorousButtonExteriorAptitude;
 		icon: self toolbarIcon
 ]
 
@@ -164,6 +160,7 @@ GtPomodoroSettings >> countdownAction [
 								self class worldPomodoroElement
 									icon: self toolbarIcon;
 									label: 'Start a Pomodoro Timer';
+									addAptitude: self dropdown;
 									enable ] asBlTask ] ].
 	self class toolbar enqueueTask: iconTask.
 	self class toolbar enqueueTask: timeTask
@@ -199,6 +196,31 @@ GtPomodoroSettings >> createPomodoro: aMemento [
 		duration: aDuration;
 		goals: aMemento goals;
 		yourself
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> dropdown [
+	^ dropdownAptitude := BrWithExplicitDropdownAptitude
+			handle: [ BrButton new
+					id: self class blocElementId;
+					size: 48 @ 48;
+					aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
+					icon: self toolbarIcon ]
+			content: [ :explicitMenu | 
+				menu := explicitMenu.
+				BrFrame new
+					fitContent;
+					addChild: (self asGtMagritteViewModel asElement margin: (BlInsets all: 20)) ]
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> dropdownAptitude [
+	^ dropdownAptitude
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> dropdownAptitude: anObject [
+	^ dropdownAptitude := anObject
 ]
 
 { #category : #accessing }
@@ -243,7 +265,9 @@ GtPomodoroSettings >> magritteAcceptAction [
 								delay: 0 milliseconds;
 								action: [ self class worldPomodoroElement
 										disable;
+										removeAptitude: dropdownAptitude;
 										icon: (self countdownTimer: 0 showRing: self class showRing).
+										dropdownAptitude := nil.
 									self countdownAction ]).
 					self pomodoros add: (self createPomodoro: aMemento) ]);
 		beAlwaysEnabled
@@ -256,6 +280,11 @@ GtPomodoroSettings >> magritteCancelAction [
 		onSuccessCallback: (GtMagritteCallback new
 				action: [ :aModel :aButton :aMemento :aDescription | aButton fireEvent: BrDropdownHideWish new ]);
 		beAlwaysEnabled
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> menu [
+	^ menu
 ]
 
 { #category : #accessing }
@@ -324,6 +353,18 @@ GtPomodoroSettings >> recalculationsPerSecond: anInteger [
 	"Set how many times per second the percentage completion is redrawn"
 
 	recalculationsPerSecond := anInteger
+]
+
+{ #category : #accessing }
+GtPomodoroSettings >> recreateDropdown [
+	| element |
+	element := self class worldPomodoroElement.
+	element
+		removeAptitude: self dropdownAptitude;
+		icon: self toolbarIcon;
+		label: 'Start a Pomodoro Timer';
+		addAptitude: self dropdown;
+		enable
 ]
 
 { #category : #accessing }
