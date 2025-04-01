@@ -200,17 +200,14 @@ GtPomodoroSettings >> createPomodoro: aMemento [
 
 { #category : #accessing }
 GtPomodoroSettings >> dropdown [
-	^ dropdownAptitude := BrWithExplicitDropdownAptitude
-			handle: [ BrButton new
-					id: self class blocElementId;
-					size: 48 @ 48;
-					aptitude: BrGlamorousButtonWithIconAptitude - BrGlamorousButtonExteriorAptitude;
-					icon: self toolbarIcon ]
-			content: [ :explicitMenu | 
-				menu := explicitMenu.
-				BrFrame new
-					fitContent;
-					addChild: (self asGtMagritteViewModel asElement margin: (BlInsets all: 20)) ]
+	^ dropdownAptitude := BrWithExplicitDropdownAptitude new
+			withoutHandle;
+			stencil: [ BrMenuExplicit new
+					stencil: [ :explicitMenu | 
+						menu := explicitMenu.
+						BrFrame new
+							fitContent;
+							addChild: (self asGtMagritteViewModel asElement margin: (BlInsets all: 20)) ] ]
 ]
 
 { #category : #accessing }
