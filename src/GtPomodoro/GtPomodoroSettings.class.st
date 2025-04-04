@@ -233,11 +233,11 @@ GtPomodoroSettings >> dropdown [
 													{GtMagritteActionElement.
 														GtMagritteOneLineEditorElement}
 														anySatisfy: [ :each | anElement isKindOf: each ] ].
-										focusableElements
+										"focusableElements
 											do: [ :anElement | 
 												anElement
 													addAptitude: (BrKeyboardFocusChangeAptitude new rootValuable: [ :_ | aFrame ]) ].
-										focusableElements first requestFocus ]) asElement ] ]
+										focusableElements first requestFocus" ]) asElement ] ]
 ]
 
 { #category : #accessing }
