@@ -19,10 +19,23 @@ Class {
 		'Toolbar'
 	],
 	#classInstVars : [
-		'uniqueInstance'
+		'uniqueInstance',
+		'shortcut'
 	],
 	#category : #GtPomodoro
 }
+
+{ #category : #'as yet unclassified' }
+GtPomodoroSettings class >> addShortcut [
+	| rootElement  |
+	rootElement := (GtWorld spaceWithId: GtWorld defaultId do: #yourself) root.
+	shortcut := BlShortcutWithAction new
+			name: 'Launch Gt Pomodoro';
+			description: 'Launch Gt Pomodoro Dropdown';
+			combination: BlKeyCombinationBuilder new alt p build;
+			action: [ :aBlShortcutEvent :aBlShortcutWithAction | self worldPomodoroElement dispatchEvent: BrDropdownShowWish new ].
+	rootElement addShortcut: shortcut
+]
 
 { #category : #accessing }
 GtPomodoroSettings class >> asElement [
@@ -42,12 +55,16 @@ GtPomodoroSettings class >> defaultDurations [
 
 { #category : #accessing }
 GtPomodoroSettings class >> disable [
-	[ self toolbar removeItem: self worldPomodoroElement ] on: NotFound do: [  ]
+	[ self toolbar removeItem: self worldPomodoroElement ] on: NotFound do: [  ].
+	(GtWorld spaceWithId: GtWorld defaultId do: #yourself) root
+		removeShortcut: shortcut.
+	shortcut := nil
 ]
 
 { #category : #initialization }
 GtPomodoroSettings class >> enable [
-	self toolbar addItem: self asElement
+	self toolbar addItem: self asElement.
+	self addShortcut
 ]
 
 { #category : #inspecting }
@@ -207,7 +224,20 @@ GtPomodoroSettings >> dropdown [
 						menu := explicitMenu.
 						BrFrame new
 							fitContent;
-							addChild: (self asGtMagritteViewModel asElement margin: (BlInsets all: 20)) ] ]
+							addChild: (self asGtMagritteViewModel
+									onElementCreated: [ :aFrame | 
+										| focusableElements |
+										aFrame margin: (BlInsets all: 20).
+										focusableElements := aFrame
+												allChildrenBreadthFirstSelect: [ :anElement | 
+													{GtMagritteActionElement.
+														GtMagritteOneLineEditorElement}
+														anySatisfy: [ :each | anElement isKindOf: each ] ].
+										focusableElements
+											do: [ :anElement | 
+												anElement
+													addAptitude: (BrKeyboardFocusChangeAptitude new rootValuable: [ :_ | aFrame ]) ].
+										focusableElements first requestFocus ]) asElement ] ]
 ]
 
 { #category : #accessing }
